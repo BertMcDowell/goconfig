@@ -11,6 +11,9 @@ host = example.com
 port = 43
 compression = on
 active = false
+array0 = value1
+array1 = value1, value2
+array2 = value1, value with spaces2
 
 [service-1]
 port = 443
@@ -22,6 +25,12 @@ type stringtest struct {
 	section string
 	option  string
 	answer  string
+}
+
+type stringarraytest struct {
+	section string
+	option  string
+	answer  []string
 }
 
 type inttest struct {
@@ -38,6 +47,9 @@ type booltest struct {
 
 var testSet = []interface{}{
 	stringtest{"", "host", "example.com"},
+	stringarraytest{"default", "array0", []string{"value1"}},
+	stringarraytest{"default", "array1", []string{"value1", "value2"}},
+	stringarraytest{"default", "array2", []string{"value1", "value with spaces2"}},
 	inttest{"default", "port", 43},
 	booltest{"default", "compression", true},
 	booltest{"default", "active", false},
@@ -60,6 +72,22 @@ func TestBuild(t *testing.T) {
 				t.Error("c.GetString(\"" + e.section + "\",\"" + e.option + "\") returned error: " + err.Error())
 			} else if ans != e.answer {
 				t.Error("c.GetString(\"" + e.section + "\",\"" + e.option + "\") returned incorrect answer: " + ans)
+			}
+		case stringarraytest:
+			e := element.(stringarraytest)
+			ans, err := c.GetStringArray(e.section, e.option)
+			if err != nil {
+				t.Error("c.GetStringArray(\"" + e.section + "\",\"" + e.option + "\") returned error: " + err.Error())
+			} else {
+				if len(ans) != len(e.answer) {
+					t.Error("c.GetStringArray(\"" + e.section + "\",\"" + e.option + "\") returned incorrect number of elements ")
+				} else {
+					for i := 0; i < len(ans); i++ {
+						if ans[i] != e.answer[i] {
+							t.Error("c.GetStringArray(\"" + e.section + "\",\"" + e.option + "\") returned mismatched element: " + e.answer[i] + " != " + ans[i])
+						}
+					}
+				}
 			}
 		case inttest:
 			e := element.(inttest)

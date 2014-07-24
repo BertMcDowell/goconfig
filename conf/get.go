@@ -109,6 +109,23 @@ func (c *ConfigFile) GetString(section string, option string) (value string, err
 	return value, nil
 }
 
+// GetString gets the string values for the given option in the section.
+func (c *ConfigFile) GetStringArray(section string, option string) (value []string, err error) {
+	var str = ""
+	str, err = c.GetRawString(section, option)
+	if err != nil {
+		return nil, err
+	}
+
+	value = strings.Split(str, ",")
+	// Trim the white space
+	for i, val := range value {
+		value[i] = strings.Trim(val, " ")
+	}
+
+	return value, nil
+}
+
 // GetInt has the same behaviour as GetString but converts the response to int.
 func (c *ConfigFile) GetInt(section string, option string) (value int, err error) {
 	sv, err := c.GetString(section, option)
